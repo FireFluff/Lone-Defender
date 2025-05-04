@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -5,7 +6,7 @@ namespace _Scripts
 {
     public class EnemySpawner : MonoBehaviour
     {
-        [SerializeField] private GameObject enemyPrefab;
+        [SerializeField] private List<GameObject> enemyPrefab;
         [SerializeField] private float distanceOffScreen = 2f;
         [SerializeField] private float startSpawnRatePS = 2f;
         [SerializeField] private float spawnRateIncrease = 0.1f;
@@ -75,7 +76,7 @@ namespace _Scripts
         private void SpawnEnemy()
         {
             Vector3 spawnPosition = GetOffScreenPosition();
-            GameObject enemy = ObjectPool.ShearedInstance.GetPooledObject();
+            GameObject enemy = ObjectPoolManager.SourceObjectPoolManager.GetPooledObject("Enemy");
             enemy.transform.position = spawnPosition;
             enemy.SetActive(true);
         }
