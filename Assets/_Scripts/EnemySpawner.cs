@@ -14,16 +14,17 @@ namespace _Scripts
         
         private float _timer;
         private Vector3 _screenBounds;
-        private float _waveTimer;
-        private int _waveNumber = 1;
+        /*private float _waveTimer;*/
+        /*private int _waveNumber = 1;*/
         private float _currentSpawnRatePS;
         private Camera _mainCamera;
         
         void Start()
         {
             _mainCamera = Camera.main;
-            _screenBounds = _mainCamera.ScreenToWorldPoint(new 
-                Vector3(Screen.width, Screen.height, _mainCamera.transform.position.z));
+            if (_mainCamera != null)
+                _screenBounds = _mainCamera.ScreenToWorldPoint(new
+                    Vector3(Screen.width, Screen.height, _mainCamera.transform.position.z));
             _currentSpawnRatePS = startSpawnRatePS;
         }
 
@@ -76,17 +77,15 @@ namespace _Scripts
         private void SpawnEnemy()
         {
             Vector3 spawnPosition = GetOffScreenPosition();
-            GameObject enemy = ObjectPoolManager.SourceObjectPoolManager.GetPooledObject("Enemy");
-            enemy.transform.position = spawnPosition;
-            enemy.SetActive(true);
+            GameObject enemy = ObjectPoolManager.SpawnFromPool(enemyPrefab[0], spawnPosition, Quaternion.identity, ObjectPoolManager.PoolType.Enemies);
         }
         
-        private void StartNewWave()
+        /*private void StartNewWave()
         {
             _waveNumber++;
             _currentSpawnRatePS += spawnRateIncrease;
             _waveTimer = 0;
             Debug.Log("Wave " + _waveNumber + " started! Spawn rate: " + 1/_currentSpawnRatePS + " enemies per second.");
-        }
+        }*/
     }
 }

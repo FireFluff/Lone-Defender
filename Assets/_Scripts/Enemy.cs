@@ -65,7 +65,7 @@ namespace _Scripts
 
         private void OnDeath()
         {
-            gameObject.SetActive(false);
+            ObjectPoolManager.ReturnToPool(gameObject);
         }
 
         private void OnTriggerEnter2D(Collider2D other)

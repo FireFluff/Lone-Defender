@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectPoolInfo
+namespace _Scripts
 {
-    public string LookUpString;
-    public List<GameObject> PooledObjects = new List<GameObject>();
-
-    public ObjectPoolInfo(string poolLookUp)
+    public class ObjectPoolInfo
     {
-        LookUpString = poolLookUp;
+        public string LookUpString;
+        public List<GameObject> PooledObjects = new List<GameObject>();
+
+        public ObjectPoolInfo(string poolLookUp)
+        {
+            LookUpString = poolLookUp;
+        }
     }
 }
