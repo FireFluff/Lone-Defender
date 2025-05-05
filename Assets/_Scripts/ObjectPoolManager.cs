@@ -11,20 +11,23 @@ namespace _Scripts
         /// <summary>
         /// The list of all current object pools.
         /// </summary>
-        public static List<ObjectPoolInfo> ObjectPools = new List<ObjectPoolInfo>();
+        private static readonly List<ObjectPoolInfo> ObjectPools = new List<ObjectPoolInfo>();
         
         // Object pool 1
         [Foldout("Basic Enemy")]
         [SerializeField] private GameObject basicEnemy;
-        [Foldout("Basic Enemy")]
-        [SerializeField] private int amountToPoolBe;
+        [FormerlySerializedAs("amountToPoolBe")]
+        [Foldout("Basic Enemy"), Range(1, 100)]
+        [SerializeField] private int preloadAmountBe;
         
-        [Header("Inspector organizers")]
+        [Foldout("Inspector organizers")]
         [SerializeField] private GameObject emptyHolder;
+        [Space]
         private static GameObject _enemiesEmpty;
         private static GameObject _projectilesEmpty;
         private static GameObject _particlesEmpty;
         private static GameObject _noneEmpty;
+        
         
         /// <summary>
         /// The enum for separating the pooled objects to separate parent objects.
@@ -36,12 +39,13 @@ namespace _Scripts
             Particles,
             None
         }
-
+        // Variables for the object pools.
+        //==============================================================================================================
         private void Awake()
         {
             SetupEmpties();
         }
-        
+        //==============================================================================================================
         // The setup stage for better Hierarchy organization during.
         private void SetupEmpties()
         {
@@ -57,6 +61,7 @@ namespace _Scripts
             _noneEmpty = new GameObject("None");
             _noneEmpty.transform.SetParent(emptyHolder.transform);
         }
+        //==============================================================================================================
         
         /// <summary>
         /// Spawn an object from the pools with a specific position rotation.
@@ -83,23 +88,32 @@ namespace _Scripts
             }
             
             GameObject parentObject = SetParentObject(poolType); // Bind the object to appropriate empty.
-            GameObject spawnableObject = null;
-            // Check if the pool has any objects in it, if not make one.
-            if (pool.PooledObjects.Count <= 0)
-            {
-                spawnableObject = Instantiate(objectToSpawn, spawnPosition, spawnRotation);
-                spawnableObject.transform.SetParent(parentObject.transform);
-                pool.PooledObjects.Add(spawnableObject);
-            }
+            /*GameObject spawnableObject = null;
             // Look for an inactive object in the pool and return it.
-            foreach (var obj in pool.PooledObjects.Where(obj => !obj.activeInHierarchy))
+            foreach (var obj in pool.InactiveObjects.Where(obj => !obj.activeInHierarchy))
             {
                 spawnableObject = obj;
                 spawnableObject.SetActive(true);
+                pool.InactiveObjects.Remove(spawnableObject);
                 break;
+            }*/
+            
+            GameObject spawnableObject = pool.InactiveObjects.FirstOrDefault();
+            // Check if the pool has any objects in it, if not make one.
+            if (spawnableObject == null)
+            {
+                spawnableObject = Instantiate(objectToSpawn, parentObject.transform, true);
+                pool.InactiveObjects.Add(spawnableObject);
             }
+            
+            spawnableObject.transform.position = spawnPosition;
+            spawnableObject.transform.rotation = spawnRotation;
+            spawnableObject.SetActive(true);
+            pool.InactiveObjects.Remove(spawnableObject);
+            
             return spawnableObject;
         }
+        //==============================================================================================================
         
         /// <summary>
         /// Set the parent object to one of the empty objects for hierarchy organization. 
@@ -121,6 +135,7 @@ namespace _Scripts
                     return _noneEmpty;
             }
         }
+        //==============================================================================================================
         
         /// <summary>
         /// The simpler overload of spawn from pool that you can set location/rotation externally.
@@ -146,14 +161,14 @@ namespace _Scripts
             GameObject parentObject = SetParentObject(poolType); // Bind the object to appropriate empty.
             GameObject spawnableObject = null;
             // Check if the pool has any objects in it, if not make one.
-            if (pool.PooledObjects.Count <= 0)
+            if (pool.InactiveObjects.Count <= 0)
             {
                 spawnableObject = Instantiate(objectToSpawn, parentObject.transform, true);
                 spawnableObject.SetActive(false);
-                pool.PooledObjects.Add(spawnableObject);
+                pool.InactiveObjects.Add(spawnableObject);
             }
             // Look for an inactive object in the pool and return it.
-            foreach (var obj in pool.PooledObjects.Where(obj => !obj.activeInHierarchy))
+            foreach (var obj in pool.InactiveObjects.Where(obj => !obj.activeInHierarchy))
             {
                 spawnableObject = obj;
                 break;
@@ -161,6 +176,7 @@ namespace _Scripts
             
             return spawnableObject;
         }
+        //==============================================================================================================
         
         public static void ReturnToPool(GameObject objectToReturn)
         {
@@ -171,20 +187,32 @@ namespace _Scripts
             if (pool != null)
             {
                 objectToReturn.SetActive(false);
-                pool.PooledObjects.Add(objectToReturn);
+                pool.InactiveObjects.Add(objectToReturn);
             }
             else
             {
                 Debug.LogError("Trying to release an object that doesn't belong to any pool: " + objectToReturn.name);
             }
         }
-        
+        //==============================================================================================================
         
         private void Start()
         {
-            for (int i = 0; i < amountToPoolBe; i++)
+            
+            // Preload the object pools with the given amount.
+            PreloadObjects(basicEnemy, preloadAmountBe, PoolType.Enemies);
+        }
+        //==============================================================================================================
+        private static void PreloadObjects(GameObject prefab, int amount, PoolType poolType)
+        {
+            ObjectPoolInfo pool = new ObjectPoolInfo(prefab.name);
+            ObjectPools.Add(pool);
+            GameObject parentObject = SetParentObject(poolType);
+            for (int i = 0; i < amount; i++)
             {
-                var temp = SpawnFromPool(basicEnemy);
+                GameObject obj = Instantiate(prefab, parentObject.transform , true);
+                obj.SetActive(false);
+                pool.InactiveObjects.Add(obj);
             }
         }
     }

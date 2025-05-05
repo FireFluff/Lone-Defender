@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -6,46 +8,56 @@ namespace _Scripts
 {
     public class EnemySpawner : MonoBehaviour
     {
-        [SerializeField] private List<GameObject> enemyPrefab;
+        [ReorderableList]
+        [SerializeField] private List<GameObject> enemyPrefabs;
+        
+        [Foldout("Spawn\\Wave Modifiers")]
         [SerializeField] private float distanceOffScreen = 2f;
-        [SerializeField] private float startSpawnRatePS = 2f;
-        [SerializeField] private float spawnRateIncrease = 0.1f;
-        [SerializeField] private int waveDuration = 30;
+        [Foldout("Spawn\\Wave Modifiers")]
+        [SerializeField] private float startSpawnRatePS = 0.2f;
+        [Foldout("Spawn\\Wave Modifiers")]
+        [SerializeField] private float spawnRateIncrease = 0.2f;
+        [Foldout("Spawn\\Wave Modifiers")]
+        [SerializeField] private int waveNumber = 1;
+        [FormerlySerializedAs("enemyPerWave")]
+        [Foldout("Spawn\\Wave Modifiers")]
+        [SerializeField] private int enemiesPerWave = 1;
         
         private float _timer;
         private Vector3 _screenBounds;
-        /*private float _waveTimer;*/
-        /*private int _waveNumber = 1;*/
+        [Foldout("Spawn\\Wave Modifiers"), ShowNonSerializedField]
         private float _currentSpawnRatePS;
+        private int _currentWaveEnemiesSpawned;
         private Camera _mainCamera;
         
         void Start()
         {
             _mainCamera = Camera.main;
-            if (_mainCamera != null)
-                _screenBounds = _mainCamera.ScreenToWorldPoint(new
-                    Vector3(Screen.width, Screen.height, _mainCamera.transform.position.z));
+            UpdateScreenBounds();
             _currentSpawnRatePS = startSpawnRatePS;
+            StartCoroutine(SpawnEnemiesCoroutine());
         }
-
-        // Update is called once per frame
-        void Update()
+        
+        private void UpdateScreenBounds()
         {
-            /*_waveTimer += Time.deltaTime;
-            
-            if (_waveTimer >= waveDuration)
+            _screenBounds = _mainCamera.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, _mainCamera.transform.position.z));
+        }
+        
+        private IEnumerator SpawnEnemiesCoroutine()
+        {
+            while (true)
             {
-                StartNewWave();
-            }*/
-            
-            if (_timer < 1 / startSpawnRatePS)
-            {
-                _timer += Time.deltaTime;
-            }
-            else
-            {
-                SpawnEnemy();
-                _timer = 0;
+                if (_currentWaveEnemiesSpawned < enemiesPerWave)
+                {
+                    SpawnEnemy();
+                    _currentWaveEnemiesSpawned++;
+                    yield return new WaitForSeconds(1f / _currentSpawnRatePS);
+                }
+                else
+                {
+                    StartNewWave();
+                    yield return new WaitForSeconds(3f); // Delay before the next wave
+                }
             }
         }
     
@@ -77,15 +89,37 @@ namespace _Scripts
         private void SpawnEnemy()
         {
             Vector3 spawnPosition = GetOffScreenPosition();
-            GameObject enemy = ObjectPoolManager.SpawnFromPool(enemyPrefab[0], spawnPosition, Quaternion.identity, ObjectPoolManager.PoolType.Enemies);
+            int enemyIndex = Mathf.Min(waveNumber - 1, enemyPrefabs.Count - 1);
+            GameObject enemyToSpawn = enemyPrefabs[enemyIndex];
+            GameObject enemy = ObjectPoolManager.SpawnFromPool(
+                enemyToSpawn, spawnPosition, Quaternion.identity, ObjectPoolManager.PoolType.Enemies);
+            if (enemy.TryGetComponent<Enemy>(out var enemyComponent))
+            {
+                enemyComponent.SetWaveStats(waveNumber);
+            }
+            _currentWaveEnemiesSpawned++;
         }
         
-        /*private void StartNewWave()
+        private void SpawnEnemies(int count)
         {
-            _waveNumber++;
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 spawnPosition = GetOffScreenPosition();
+                int enemyIndex = Mathf.Min(waveNumber - 1, enemyPrefabs.Count - 1);
+                GameObject enemyToSpawn = enemyPrefabs[enemyIndex];
+                GameObject enemy = ObjectPoolManager.SpawnFromPool(enemyToSpawn, spawnPosition, Quaternion.identity, ObjectPoolManager.PoolType.Enemies);
+                enemy.GetComponent<Enemy>().SetWaveStats(waveNumber);
+                _currentWaveEnemiesSpawned++;
+            }
+        }
+        
+        private void StartNewWave()
+        {
+            waveNumber++;
             _currentSpawnRatePS += spawnRateIncrease;
-            _waveTimer = 0;
-            Debug.Log("Wave " + _waveNumber + " started! Spawn rate: " + 1/_currentSpawnRatePS + " enemies per second.");
-        }*/
+            enemiesPerWave += 2; // Increase enemies per wave
+            _currentWaveEnemiesSpawned = 0; // Reset counter
+            Debug.Log("Wave " + waveNumber + " started! Spawn rate: " + 1 / _currentSpawnRatePS + " enemies per second.");
+        }
     }
 }

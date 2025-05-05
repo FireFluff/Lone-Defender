@@ -589,11 +589,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9f28ab8073cf6547b843bcaa6f14657, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPrefab:
-  - {fileID: 8383612821112575436, guid: 9df8e308a5b4a4b42b3da2e5fef7fe7c, type: 3}
+  enemyPrefabs: []
   distanceOffScreen: 2
   startSpawnRatePS: 0.2
-  spawnRateIncrease: 0.1
+  spawnRateIncrease: 0.2
   waveDuration: 30
 --- !u!1 &1516996338
 GameObject:
@@ -794,8 +793,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f3829f671c87f74fb7a2c5f206f4e2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  basicEnemy: {fileID: 0}
-  amountToPoolBe: 0
+  basicEnemy: {fileID: 8383612821112575436, guid: 9df8e308a5b4a4b42b3da2e5fef7fe7c, type: 3}
+  amountToPoolBe: 5
   emptyHolder: {fileID: 1724335712}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
