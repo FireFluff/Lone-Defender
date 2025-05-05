@@ -8,8 +8,12 @@ namespace _Scripts
 {
     public class ObjectPoolManager : MonoBehaviour
     {
+        /// <summary>
+        /// The list of all current object pools.
+        /// </summary>
         public static List<ObjectPoolInfo> ObjectPools = new List<ObjectPoolInfo>();
         
+        // Object pool 1
         [Foldout("Basic Enemy")]
         [SerializeField] private GameObject basicEnemy;
         [Foldout("Basic Enemy")]
@@ -22,6 +26,9 @@ namespace _Scripts
         private static GameObject _particlesEmpty;
         private static GameObject _noneEmpty;
         
+        /// <summary>
+        /// The enum for separating the pooled objects to separate parent objects.
+        /// </summary>
         public enum PoolType
         {
             Enemies,
@@ -30,13 +37,12 @@ namespace _Scripts
             None
         }
 
-        public static PoolType PoolingType;
-
         private void Awake()
         {
             SetupEmpties();
         }
         
+        // The setup stage for better Hierarchy organization during.
         private void SetupEmpties()
         {
             _enemiesEmpty = new GameObject("Enemies");
@@ -51,26 +57,41 @@ namespace _Scripts
             _noneEmpty = new GameObject("None");
             _noneEmpty.transform.SetParent(emptyHolder.transform);
         }
-
+        
+        /// <summary>
+        /// Spawn an object from the pools with a specific position rotation.
+        /// </summary>
+        /// <param name="objectToSpawn">What object to get/create in the pools.</param>
+        /// <param name="spawnPosition">Vector3 location.</param>
+        /// <param name="spawnRotation">Quaternion Rotation.</param>
+        /// <param name="poolType">Defaults to none, used to organize in the hierarchy.</param>
+        /// <returns>
+        /// Game object from the pools with the given location and Rotation.
+        /// It's also a child of the given parent pool object.
+        /// </returns>
         public static GameObject SpawnFromPool(GameObject objectToSpawn, Vector3 spawnPosition,
             Quaternion spawnRotation, PoolType poolType = PoolType.None)
         {
+            // Look through the pools and find a pool with the correct objects.
             ObjectPoolInfo pool = ObjectPools.Find(p => p.LookUpString == objectToSpawn.name);
 
+            // If no pools matched, make one for this object.
             if (pool == null)
             {
                 pool = new ObjectPoolInfo(objectToSpawn.name);
                 ObjectPools.Add(pool);
             }
             
-            GameObject parentObject = SetParentObject(poolType);
+            GameObject parentObject = SetParentObject(poolType); // Bind the object to appropriate empty.
             GameObject spawnableObject = null;
+            // Check if the pool has any objects in it, if not make one.
             if (pool.PooledObjects.Count <= 0)
             {
                 spawnableObject = Instantiate(objectToSpawn, spawnPosition, spawnRotation);
                 spawnableObject.transform.SetParent(parentObject.transform);
                 pool.PooledObjects.Add(spawnableObject);
             }
+            // Look for an inactive object in the pool and return it.
             foreach (var obj in pool.PooledObjects.Where(obj => !obj.activeInHierarchy))
             {
                 spawnableObject = obj;
@@ -79,7 +100,12 @@ namespace _Scripts
             }
             return spawnableObject;
         }
-
+        
+        /// <summary>
+        /// Set the parent object to one of the empty objects for hierarchy organization. 
+        /// </summary>
+        /// <param name="poolType">What empty pool object to parent to.</param>
+        /// <returns>The proper empty object to parent to.</returns>
         private static GameObject SetParentObject(PoolType poolType)
         {
             switch (poolType)
@@ -96,33 +122,43 @@ namespace _Scripts
             }
         }
         
-        public static GameObject SpawnFromPool(GameObject objectToSpawn, PoolType poolType = PoolType.None)
+        /// <summary>
+        /// The simpler overload of spawn from pool that you can set location/rotation externally.
+        /// </summary>
+        /// <param name="objectToSpawn">What object to get/create in the pools.</param>
+        /// <param name="poolType">Defaults to none, used to organize in the hierarchy.</param>
+        /// <returns>
+        /// Game object from the pools with no set location/rotation.
+        /// But it's a child of the given parent pool object.
+        /// </returns>
+        private static GameObject SpawnFromPool(GameObject objectToSpawn, PoolType poolType = PoolType.None)
         {
+            // Look through the pools and find a pool with the correct objects.
             ObjectPoolInfo pool = ObjectPools.Find(p => objectToSpawn.CompareTag(p.LookUpString));
 
+            // If no pools matched, make one for this object.
             if (pool == null)
             {
                 pool = new ObjectPoolInfo(objectToSpawn.name);
                 ObjectPools.Add(pool);
             }
             
-            GameObject parentObject = SetParentObject(poolType);
-            
+            GameObject parentObject = SetParentObject(poolType); // Bind the object to appropriate empty.
             GameObject spawnableObject = null;
+            // Check if the pool has any objects in it, if not make one.
             if (pool.PooledObjects.Count <= 0)
             {
-                spawnableObject = Instantiate(objectToSpawn);
-                spawnableObject.transform.SetParent(parentObject.transform);
+                spawnableObject = Instantiate(objectToSpawn, parentObject.transform, true);
                 spawnableObject.SetActive(false);
                 pool.PooledObjects.Add(spawnableObject);
             }
+            // Look for an inactive object in the pool and return it.
             foreach (var obj in pool.PooledObjects.Where(obj => !obj.activeInHierarchy))
             {
                 spawnableObject = obj;
                 break;
             }
             
-
             return spawnableObject;
         }
         
@@ -151,21 +187,5 @@ namespace _Scripts
                 var temp = SpawnFromPool(basicEnemy);
             }
         }
-    
-        /*public GameObject GetPooledObject(string wantedTag)
-        {
-            for (int i = 0; i < _pooledObjects.Count; i++)
-            {
-                if (!_pooledObjects[i].activeInHierarchy && _pooledObjects[i].CompareTag(wantedTag))
-                {
-                    return _pooledObjects[i];
-                }
-            }
-
-            GameObject tmp = Instantiate(basicEnemy);
-            tmp.SetActive(false);
-            _pooledObjects.Add(tmp);
-            return tmp;
-        }*/
     }
 }
