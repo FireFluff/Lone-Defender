@@ -6,7 +6,7 @@ namespace _Scripts
     public class ObjectPoolInfo
     {
         public string LookUpString;
-        public List<GameObject> PooledObjects = new List<GameObject>();
+        public List<GameObject> InactiveObjects = new List<GameObject>();
 
         public ObjectPoolInfo(string poolLookUp)
         {

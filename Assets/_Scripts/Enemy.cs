@@ -11,7 +11,7 @@ namespace _Scripts
         private Transform _playerTransform;
     
         // Start is called once before the first execution of Update after the MonoBehaviour is created
-        private void OnEnable()
+        private void Start()
         {
             _playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         
@@ -19,6 +19,13 @@ namespace _Scripts
             _currentStats.HP = enemyStats.HP;
             _currentStats.speed = enemyStats.speed;
             _currentStats.AD = enemyStats.AD;
+        }
+        
+        public void SetWaveStats(int wave)
+        {
+            _currentStats.HP = enemyStats.HP * wave; // Scale HP
+            _currentStats.speed = enemyStats.speed * (1 + (wave - 1) * 0.1f); // Scale speed slightly
+            _currentStats.AD = enemyStats.AD * wave; // Scale attack damage
         }
 
         // Update is called once per frame
