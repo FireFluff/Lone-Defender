@@ -5,7 +5,8 @@ public class Player : MonoBehaviour
 {
     [SerializeField] private float _hp;
     [SerializeField] public float maxHp;
-    
+    [SerializeField] public float maxShield;
+    [SerializeField] public float maxAttack;
     
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
