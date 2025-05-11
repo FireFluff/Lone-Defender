@@ -13,8 +13,8 @@ namespace _Scripts
         
         [Foldout("Spawn\\Wave Modifiers")]
         [SerializeField] private float distanceOffScreen = 2f;
-        [Foldout("Spawn\\Wave Modifiers")]
-        [SerializeField] private float startSpawnRatePS = 0.2f;
+        /*[Foldout("Spawn\\Wave Modifiers")]
+        [SerializeField] private float startSpawnRatePS = 0.2f;*/
         [Foldout("Spawn\\Wave Modifiers")]
         [SerializeField] private float spawnRateIncrease = 0.2f;
         [Foldout("Spawn\\Wave Modifiers")]
@@ -23,7 +23,6 @@ namespace _Scripts
         [Foldout("Spawn\\Wave Modifiers")]
         [SerializeField] private int enemiesPerWave = 1;
         
-        private float _timer;
         private Vector3 _screenBounds;
         [Foldout("Spawn\\Wave Modifiers"), ShowNonSerializedField]
         private float _currentSpawnRatePS;
@@ -34,7 +33,7 @@ namespace _Scripts
         {
             _mainCamera = Camera.main;
             UpdateScreenBounds();
-            _currentSpawnRatePS = startSpawnRatePS;
+            /*_currentSpawnRatePS = startSpawnRatePS;*/
             StartCoroutine(SpawnEnemiesCoroutine());
         }
         
@@ -51,12 +50,12 @@ namespace _Scripts
                 {
                     SpawnEnemy();
                     _currentWaveEnemiesSpawned++;
-                    yield return new WaitForSeconds(1f / _currentSpawnRatePS);
+                    yield return new WaitForSeconds(1f / enemiesPerWave);
                 }
                 else
                 {
                     StartNewWave();
-                    yield return new WaitForSeconds(3f); // Delay before the next wave
+                    yield return new WaitForSeconds(10f); // Delay before the next wave
                 }
             }
         }
@@ -119,7 +118,7 @@ namespace _Scripts
             _currentSpawnRatePS += spawnRateIncrease;
             enemiesPerWave += 2; // Increase enemies per wave
             _currentWaveEnemiesSpawned = 0; // Reset counter
-            Debug.Log("Wave " + waveNumber + " started! Spawn rate: " + 1 / _currentSpawnRatePS + " enemies per second.");
+            Debug.Log("Wave " + waveNumber + " started! Spawn rate: " + 1 / enemiesPerWave  + " enemies per second.");
         }
     }
 }

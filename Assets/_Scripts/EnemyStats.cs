@@ -9,5 +9,6 @@ namespace _Scripts
         public float HP;
         public float speed;
         public float AD;
+        public float Shield;
     }
 }
