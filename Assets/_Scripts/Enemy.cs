@@ -1,4 +1,5 @@
 using System;
+using NaughtyAttributes;
 using UnityEngine;
 
 namespace _Scripts
@@ -6,12 +7,12 @@ namespace _Scripts
     public class Enemy : MonoBehaviour
     {
         [SerializeField] private EnemyStats enemyStats;
-        private EnemyStats _currentStats;
+        [Expandable] private EnemyStats _currentStats;
     
         private Transform _playerTransform;
     
         // Start is called once before the first execution of Update after the MonoBehaviour is created
-        private void Start()
+        private void OnEnable()
         {
             _playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         
